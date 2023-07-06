@@ -24,18 +24,20 @@ var (
 )
 
 type PairedConnection struct {
-	id       int
-	cliConn  net.Conn
-	svrConn  net.Conn
-	once     sync.Once
-	stopChan chan struct{}
+	id        int
+	cliConn   net.Conn
+	svrConn   net.Conn
+	once      sync.Once
+	stopChan  chan struct{}
+	hexDumper protocol.HexDumper
 }
 
-func NewPairedConnection(id int, cliConn net.Conn) *PairedConnection {
+func NewPairedConnection(id int, cliConn net.Conn, hexDumper protocol.HexDumper) *PairedConnection {
 	return &PairedConnection{
-		id:       id,
-		cliConn:  cliConn,
-		stopChan: make(chan struct{}),
+		id:        id,
+		cliConn:   cliConn,
+		stopChan:  make(chan struct{}),
+		hexDumper: hexDumper,
 	}
 }
 
@@ -56,7 +58,7 @@ func (c *PairedConnection) handleClientMessage() {
 
 	r, w := io.Pipe()
 	tee := io.MultiWriter(c.svrConn, w)
-	go protocol.CreateInterop(settings.Protocol).Dump(r, protocol.ClientSide, c.id, settings.Quiet)
+	go protocol.CreateInterop(settings.Protocol, c.hexDumper).Dump(r, protocol.ClientSide, c.id, settings.Quiet)
 	c.copyData(tee, c.cliConn, protocol.ClientSide)
 }
 
@@ -66,7 +68,7 @@ func (c *PairedConnection) handleServerMessage() {
 
 	r, w := io.Pipe()
 	tee := io.MultiWriter(newDelayedWriter(c.cliConn, settings.Delay, c.stopChan), w)
-	go protocol.CreateInterop(settings.Protocol).Dump(r, protocol.ServerSide, c.id, settings.Quiet)
+	go protocol.CreateInterop(settings.Protocol, c.hexDumper).Dump(r, protocol.ServerSide, c.id, settings.Quiet)
 	c.copyData(tee, c.svrConn, protocol.ServerSide)
 }
 
@@ -105,7 +107,7 @@ func (c *PairedConnection) stop() {
 	})
 }
 
-func startListener() error {
+func startListener(hexDumper protocol.HexDumper) error {
 	stat = NewStater(NewConnCounter(), NewStatPrinter(statInterval))
 	go stat.Start()
 
@@ -129,7 +131,7 @@ func startListener() error {
 			connIndex, cliConn.RemoteAddr()))
 
 		stat.AddConn(fmt.Sprintf("%d:client", connIndex), cliConn.(*net.TCPConn))
-		pconn := NewPairedConnection(connIndex, cliConn)
+		pconn := NewPairedConnection(connIndex, cliConn, hexDumper)
 		go pconn.process()
 	}
 }
