@@ -18,16 +18,19 @@ const (
 	mongoProtocol = "mongo"
 )
 
-type HexDumper func(data []byte) string
-type Interop interface {
-	Dump(r io.Reader, source string, id int, quiet bool)
-}
+type (
+	HexDumper func(data []byte) string
+	Interop   interface {
+		Dump(r io.Reader, source string, id int, quiet bool)
+	}
+)
 
 func CreateInterop(protocol string, hexDumper HexDumper) Interop {
 	switch protocol {
 	case grpcProtocol:
 		return &http2Interop{
 			explainer: new(grpcExplainer),
+			hexDumper: hexDumper,
 		}
 	case http2Protocol:
 		return new(http2Interop)

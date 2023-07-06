@@ -11,10 +11,10 @@ import (
 )
 
 type connCounter struct {
+	conns       map[string]time.Time
 	total       int64
 	concurrent  int64
 	max         int64
-	conns       map[string]time.Time
 	maxLifetime time.Duration
 	lock        sync.Mutex
 }

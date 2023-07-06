@@ -7,8 +7,8 @@ import (
 
 type delayedWriter struct {
 	writer   io.Writer
-	delay    time.Duration
 	stopChan <-chan struct{}
+	delay    time.Duration
 }
 
 func newDelayedWriter(writer io.Writer, delay time.Duration, stopChan <-chan struct{}) delayedWriter {

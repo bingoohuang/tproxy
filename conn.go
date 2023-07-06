@@ -24,12 +24,14 @@ var (
 )
 
 type PairedConnection struct {
-	id        int
 	cliConn   net.Conn
 	svrConn   net.Conn
-	once      sync.Once
 	stopChan  chan struct{}
 	hexDumper protocol.HexDumper
+	id        int
+	once      sync.Once
+
+	printLock sync.Mutex
 }
 
 func NewPairedConnection(id int, cliConn net.Conn, hexDumper protocol.HexDumper) *PairedConnection {
@@ -43,9 +45,9 @@ func NewPairedConnection(id int, cliConn net.Conn, hexDumper protocol.HexDumper)
 
 func (c *PairedConnection) copyData(dst io.Writer, src io.Reader, tag string) {
 	_, e := io.Copy(dst, src)
-	if e != nil && e != io.EOF {
-		netOpError, ok := e.(*net.OpError)
-		if ok && netOpError.Err.Error() != useOfClosedConn {
+	if e != nil && !errors.Is(e, io.EOF) {
+		var netOpError *net.OpError
+		if errors.As(e, &netOpError) && netOpError.Err.Error() != useOfClosedConn {
 			reason := netOpError.Unwrap().Error()
 			display.PrintlnWithTime(color.HiRedString("[%d] %s error, %s", c.id, tag, reason))
 		}

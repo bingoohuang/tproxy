@@ -4,10 +4,12 @@
 package hexdump
 
 import (
+	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
-	"os"
+	"log"
 	"strings"
 )
 
@@ -19,7 +21,8 @@ func Dump(buf []byte) string { return defaultConfig.Dump(buf) }
 type Config struct {
 	// Number of bytes from the input buffer to print in a single row. The default
 	// is 32.
-	Width int
+	Width    int
+	PrintRaw bool
 }
 
 type dumpState struct {
@@ -27,8 +30,6 @@ type dumpState struct {
 	rowIndex    int
 	maxRowWidth int
 }
-
-var raw = os.Getenv("RAW") == "1"
 
 func (s *dumpState) dump(out io.Writer, buf []byte) {
 	N := s.Width
@@ -50,8 +51,20 @@ func (s *dumpState) dump(out io.Writer, buf []byte) {
 		s.rowIndex++
 	}
 
-	if raw {
-		fmt.Fprintf(out, "\nRAW:\n%s\n\n", buf)
+	if s.PrintRaw {
+		fmt.Fprintf(out, "\nRAW:\n")
+
+		f := NewScanConfig(out).NewScanner("")
+		in := bufio.NewReader(bytes.NewReader(buf))
+		for {
+			if err := f.Scan(in); err != nil {
+				if !errors.Is(err, io.EOF) {
+					log.Print(err)
+				}
+				break
+			}
+		}
+		fmt.Fprintf(out, "\n")
 	}
 }
 
@@ -68,7 +81,6 @@ func (c Config) Dump(data []byte) string {
 	var out bytes.Buffer
 	c.newDumpState().dump(&out, data)
 	return out.String()
-
 }
 
 // Stream will read from the input io.Reader and write human-readable, formatted
@@ -90,7 +102,7 @@ func (c Config) Stream(in io.Reader, out io.Writer) error {
 
 const kDefaultWidth = 32
 
-var defaultConfig = Config{kDefaultWidth}
+var defaultConfig = Config{Width: kDefaultWidth, PrintRaw: true}
 
 const (
 	kESC        = "\033["

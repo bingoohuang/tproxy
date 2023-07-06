@@ -9,8 +9,7 @@ import (
 	"github.com/kevwan/tproxy/display"
 )
 
-type redisInterop struct {
-}
+type redisInterop struct{}
 
 func (red *redisInterop) Dump(r io.Reader, source string, id int, quiet bool) {
 	// only parse client send command

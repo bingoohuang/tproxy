@@ -28,6 +28,7 @@ type (
 
 	http2Interop struct {
 		explainer dataExplainer
+		hexDumper HexDumper
 	}
 )
 
@@ -52,7 +53,7 @@ func (i *http2Interop) Dump(r io.Reader, source string, id int, quiet bool) {
 				if end > n {
 					end = n
 				}
-				buf.WriteString(fmt.Sprint(hex.Dump(data[index:end])))
+				buf.WriteString(fmt.Sprint(i.hexDumper(data[index:end])))
 				if len(moreInfo) > 0 {
 					buf.WriteString(fmt.Sprintf("\n%s\n\n", strings.TrimSpace(moreInfo)))
 				}
@@ -226,6 +227,6 @@ func (i *http2Interop) readPreface(r io.Reader, source string, id int) {
 		color.HiBlueString("%s:(", grpcProtocol),
 		color.YellowString("http2:preface"),
 		color.HiBlueString(")")))
-	builder.WriteString(fmt.Sprint(hex.Dump(preface)))
+	builder.WriteString(fmt.Sprint(i.hexDumper(preface)))
 	display.PrintlnWithTime(builder.String())
 }

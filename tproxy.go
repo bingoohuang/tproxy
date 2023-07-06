@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/kevwan/tproxy/hexdump"
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/kevwan/tproxy/hexdump"
 )
 
 var settings Settings
@@ -15,6 +15,7 @@ func main() {
 	var (
 		localPort = flag.Int("p", 0, "Local port to listen on, default to pick a random port")
 		width     = flag.Int("width", 32, "Number of bytes in each hex dump row.")
+		raw       = flag.Bool("raw", true, "Print raw UTF-8  bytes after hex dump")
 		localHost = flag.String("l", "localhost", "Local address to listen on")
 		remote    = flag.String("r", "", "Remote address (host:port) to connect")
 		delay     = flag.Duration("d", 0, "the delay to relay packets")
@@ -38,7 +39,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	dumper := hexdump.Config{Width: *width}
+	dumper := hexdump.Config{Width: *width, PrintRaw: *raw}
 	if err := startListener(dumper.Dump); err != nil {
 		fmt.Fprintln(os.Stderr, color.HiRedString("[x] Failed to start listener: %v", err))
 		os.Exit(1)

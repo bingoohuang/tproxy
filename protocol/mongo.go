@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 
@@ -26,14 +27,13 @@ const (
 	OpMsg          = 2013 // Send a message using the format introduced in MongoDB 3.6.
 )
 
-type mongoInterop struct {
-}
+type mongoInterop struct{}
 
 type packet struct {
-	IsClientFlow  bool // client->server
-	MessageLength int
-	OpCode        int // request type
 	Payload       io.Reader
+	MessageLength int
+	OpCode        int  // request type
+	IsClientFlow  bool // client->server
 }
 
 func (mongo *mongoInterop) Dump(r io.Reader, source string, id int, quiet bool) {
@@ -144,7 +144,7 @@ func newPacket(source string, r io.Reader) *packet {
 	pk, err = parsePacket(r)
 
 	// stream close
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		display.PrintlnWithTime(" close")
 		return nil
 	} else if err != nil {
@@ -211,11 +211,10 @@ func readInt64(r io.Reader) int64 {
 
 func readString(r io.Reader) string {
 	var result []byte
-	var b = make([]byte, 1)
+	b := make([]byte, 1)
 	for {
 
 		_, err := r.Read(b)
-
 		if err != nil {
 			panic(err)
 		}
