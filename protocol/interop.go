@@ -3,6 +3,7 @@ package protocol
 import (
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/kevwan/tproxy/display"
 )
@@ -25,7 +26,7 @@ type (
 	}
 )
 
-func CreateInterop(protocol string, hexDumper HexDumper) Interop {
+func CreateInterop(protocol string, hexDumper HexDumper, printLock *sync.Mutex) Interop {
 	switch protocol {
 	case grpcProtocol:
 		return &http2Interop{
@@ -39,12 +40,16 @@ func CreateInterop(protocol string, hexDumper HexDumper) Interop {
 	case mongoProtocol:
 		return new(mongoInterop)
 	default:
-		return &defaultInterop{hexDumper: hexDumper}
+		return &defaultInterop{
+			hexDumper: hexDumper,
+			printLock: printLock,
+		}
 	}
 }
 
 type defaultInterop struct {
 	hexDumper HexDumper
+	printLock *sync.Mutex
 }
 
 func (d defaultInterop) Dump(r io.Reader, source string, id int, quiet bool) {
@@ -52,8 +57,7 @@ func (d defaultInterop) Dump(r io.Reader, source string, id int, quiet bool) {
 	for {
 		n, err := r.Read(data)
 		if n > 0 && !quiet {
-			display.PrintfWithTime("from %s [%d]:\n", source, id)
-			fmt.Println(d.hexDumper(data[:n]))
+			d.print(source, id, data, n)
 		}
 		if err != nil && err != io.EOF {
 			fmt.Printf("unable to read data %v", err)
@@ -63,4 +67,12 @@ func (d defaultInterop) Dump(r io.Reader, source string, id int, quiet bool) {
 			break
 		}
 	}
+}
+
+func (d defaultInterop) print(source string, id int, data []byte, n int) {
+	d.printLock.Lock()
+	defer d.printLock.Unlock()
+
+	display.PrintfWithTime("from %s [%d]:\n", source, id)
+	fmt.Println(d.hexDumper(data[:n]))
 }

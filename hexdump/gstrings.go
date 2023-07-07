@@ -28,6 +28,7 @@ func NewScanConfig(out io.Writer) *ScanConfig {
 }
 
 type ScanConfig struct {
+	Out     io.Writer
 	Search  string //  search ASCII sub-string
 	Min     int    // minimum length of UTF-8 strings printed, in runes
 	Max     int    // maximum length of UTF-8 strings printed, in runes
@@ -36,7 +37,6 @@ type ScanConfig struct {
 	Tab     bool   // print strings separated by tabs other than new lines
 	Offset  bool   //  show file name and offset of start of each string
 	Verbose bool   // display all input data.  Without the -v option, any output lines, which would be identical to the immediately preceding output line(except for the input offsets), are replaced with a line comprised of a single asterisk.
-	Out     io.Writer
 }
 
 type Scanner struct {

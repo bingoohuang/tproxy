@@ -60,7 +60,8 @@ func (c *PairedConnection) handleClientMessage() {
 
 	r, w := io.Pipe()
 	tee := io.MultiWriter(c.svrConn, w)
-	go protocol.CreateInterop(settings.Protocol, c.hexDumper).Dump(r, protocol.ClientSide, c.id, settings.Quiet)
+	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
+	go interop.Dump(r, protocol.ClientSide, c.id, settings.Quiet)
 	c.copyData(tee, c.cliConn, protocol.ClientSide)
 }
 
@@ -70,7 +71,8 @@ func (c *PairedConnection) handleServerMessage() {
 
 	r, w := io.Pipe()
 	tee := io.MultiWriter(newDelayedWriter(c.cliConn, settings.Delay, c.stopChan), w)
-	go protocol.CreateInterop(settings.Protocol, c.hexDumper).Dump(r, protocol.ServerSide, c.id, settings.Quiet)
+	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
+	go interop.Dump(r, protocol.ServerSide, c.id, settings.Quiet)
 	c.copyData(tee, c.svrConn, protocol.ServerSide)
 }
 

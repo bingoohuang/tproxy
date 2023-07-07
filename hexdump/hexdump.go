@@ -21,8 +21,8 @@ func Dump(buf []byte) string { return defaultConfig.Dump(buf) }
 type Config struct {
 	// Number of bytes from the input buffer to print in a single row. The default
 	// is 32.
-	Width    int
-	PrintRaw bool
+	Width        int
+	PrintStrings bool
 }
 
 type dumpState struct {
@@ -51,8 +51,8 @@ func (s *dumpState) dump(out io.Writer, buf []byte) {
 		s.rowIndex++
 	}
 
-	if s.PrintRaw {
-		fmt.Fprintf(out, "\nRAW:\n")
+	if s.PrintStrings {
+		fmt.Fprintf(out, "\nUTF8 Strings:\n")
 
 		f := NewScanConfig(out).NewScanner("")
 		in := bufio.NewReader(bytes.NewReader(buf))
@@ -102,7 +102,7 @@ func (c Config) Stream(in io.Reader, out io.Writer) error {
 
 const kDefaultWidth = 32
 
-var defaultConfig = Config{Width: kDefaultWidth, PrintRaw: true}
+var defaultConfig = Config{Width: kDefaultWidth, PrintStrings: true}
 
 const (
 	kESC        = "\033["
