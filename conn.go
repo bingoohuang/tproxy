@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 
@@ -87,7 +88,7 @@ func (c *PairedConnection) process() {
 
 	display.PrintlnWithTime(color.HiGreenString("[%d] Connected to server: %s", c.id, conn.RemoteAddr()))
 
-	stat.AddConn(fmt.Sprintf("%d:server", c.id), conn.(*net.TCPConn))
+	stat.AddConn(strconv.Itoa(c.id), conn.(*net.TCPConn))
 	c.svrConn = conn
 	go c.handleServerMessage()
 
@@ -97,8 +98,7 @@ func (c *PairedConnection) process() {
 func (c *PairedConnection) stop() {
 	c.once.Do(func() {
 		close(c.stopChan)
-		stat.DelConn(fmt.Sprintf("%d:server", c.id))
-		stat.DelConn(fmt.Sprintf("%d:client", c.id))
+		stat.DelConn(strconv.Itoa(c.id))
 
 		if c.cliConn != nil {
 			display.PrintlnWithTime(color.HiBlueString("[%d] Client connection closed", c.id))
@@ -134,7 +134,6 @@ func startListener(hexDumper protocol.HexDumper) error {
 		display.PrintlnWithTime(color.HiGreenString("[%d] Accepted from: %s",
 			connIndex, cliConn.RemoteAddr()))
 
-		stat.AddConn(fmt.Sprintf("%d:client", connIndex), cliConn.(*net.TCPConn))
 		pconn := NewPairedConnection(connIndex, cliConn, hexDumper)
 		go pconn.process()
 	}
