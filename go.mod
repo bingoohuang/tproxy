@@ -1,4 +1,4 @@
-module github.com/kevwan/tproxy
+module github.com/bingoohuang/tproxy
 
 go 1.20
 

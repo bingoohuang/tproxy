@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/kevwan/tproxy/display"
+	"github.com/bingoohuang/tproxy/display"
 )
 
 const (

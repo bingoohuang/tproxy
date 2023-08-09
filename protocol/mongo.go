@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/bingoohuang/tproxy/display"
 	"github.com/fatih/color"
-	"github.com/kevwan/tproxy/display"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

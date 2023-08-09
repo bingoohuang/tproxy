@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bingoohuang/tproxy/hexdump"
 	"github.com/fatih/color"
-	"github.com/kevwan/tproxy/hexdump"
 )
 
 var settings Settings

@@ -2,14 +2,9 @@
 
 English | [简体中文](readme-cn.md)
 
-[![Go](https://github.com/kevwan/tproxy/workflows/Go/badge.svg?branch=main)](https://github.com/kevwan/tproxy/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/kevwan/tproxy)](https://goreportcard.com/report/github.com/kevwan/tproxy)
-[![Release](https://img.shields.io/github/v/release/kevwan/tproxy.svg?style=flat-square)](https://github.com/kevwan/tproxy)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 ![img.png](images/2023-07-06.png)
 
-<a href="https://www.buymeacoffee.com/kevwan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://www.buymeacoffee.com/bingoohuang" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## Why I wrote this tool
 
@@ -21,7 +16,7 @@ When I develop backend services and write [go-zero](https://github.com/zeromicro
 ## Installation
 
 ```shell
-$ go install github.com/kevwan/tproxy@latest
+$ go install github.com/bingoohuang/tproxy@latest
 ```
 
 Or use docker images:

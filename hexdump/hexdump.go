@@ -32,6 +32,10 @@ type dumpState struct {
 }
 
 func (s *dumpState) dump(out io.Writer, buf []byte) {
+	printf := func(format string, a ...any) {
+		_, _ = fmt.Fprintln(out, format, a)
+	}
+
 	N := s.Width
 	for i := 0; i*N < len(buf); i++ {
 		a, b := i*N, (i+1)*N
@@ -47,12 +51,12 @@ func (s *dumpState) dump(out io.Writer, buf []byte) {
 		}
 		s.maxRowWidth = len(row)
 
-		fmt.Fprintf(out, "%5d: %s | %s\n", s.rowIndex*N, hex, ascii)
+		printf("%5d: %s | %s\n", s.rowIndex*N, hex, ascii)
 		s.rowIndex++
 	}
 
 	if s.PrintStrings {
-		fmt.Fprintf(out, "\nUTF8 Strings:\n")
+		printf("\nUTF8 Strings:\n")
 
 		f := NewScanConfig(out).NewScanner("")
 		in := bufio.NewReader(bytes.NewReader(buf))
@@ -64,7 +68,7 @@ func (s *dumpState) dump(out io.Writer, buf []byte) {
 				break
 			}
 		}
-		fmt.Fprintf(out, "\n")
+		printf("\n")
 	}
 }
 
@@ -92,9 +96,11 @@ func (c Config) Stream(in io.Reader, out io.Writer) error {
 	for {
 		n, err := io.ReadFull(in, buf)
 		s.dump(out, buf[:n])
-		if err == io.EOF || err == io.ErrUnexpectedEOF {
-			return nil
-		} else if err != nil {
+
+		if err != nil {
+			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+				return nil
+			}
 			return err
 		}
 	}

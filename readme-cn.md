@@ -2,19 +2,14 @@
 
 [English](readme.md) | 简体中文
 
-[![Go](https://github.com/kevwan/tproxy/workflows/Go/badge.svg?branch=main)](https://github.com/kevwan/tproxy/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/kevwan/tproxy)](https://goreportcard.com/report/github.com/kevwan/tproxy)
-[![Release](https://img.shields.io/github/v/release/kevwan/tproxy.svg?style=flat-square)](https://github.com/kevwan/tproxy)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-
 ![img.png](images/2023-07-06.png)
 
-<a href="https://www.buymeacoffee.com/kevwan" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://www.buymeacoffee.com/bingoohuang" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## 为啥写这个工具
 
 当我在做后端开发或者写 [go-zero](https://github.com/zeromicro/go-zero) 的时候，经常会需要监控网络连接，分析请求内容。比如：
+
 1. 分析 gRPC 连接何时连接、何时重连
 2. 分析 MySQL 连接池，当前多少连接，连接的生命周期是什么策略
 3. 也可以用来观察和分析任何 TCP 连接
@@ -22,7 +17,7 @@
 ## 安装
 
 ```shell
-$ GOPROXY=https://goproxy.cn/,direct go install github.com/kevwan/tproxy@latest
+$ GOPROXY=https://goproxy.cn/,direct go install github.com/bingoohuang/tproxy@latest
 ```
 
 或者使用 docker 镜像：

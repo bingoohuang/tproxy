@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bingoohuang/tproxy/display"
+	"github.com/bingoohuang/tproxy/protocol"
 	"github.com/fatih/color"
-	"github.com/kevwan/tproxy/display"
-	"github.com/kevwan/tproxy/protocol"
 )
 
 const (
