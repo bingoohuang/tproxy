@@ -33,7 +33,7 @@ type dumpState struct {
 
 func (s *dumpState) dump(out io.Writer, buf []byte) {
 	printf := func(format string, a ...any) {
-		_, _ = fmt.Fprintf(out, format, a)
+		_, _ = fmt.Fprintf(out, format, a...)
 	}
 
 	N := s.Width
