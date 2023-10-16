@@ -70,6 +70,10 @@ func (d defaultInterop) Dump(r io.Reader, source string, id int, quiet bool) {
 }
 
 func (d defaultInterop) print(source string, id int, data []byte, n int) {
+	if d.hexDumper == nil {
+		return
+	}
+
 	d.printLock.Lock()
 	defer d.printLock.Unlock()
 
