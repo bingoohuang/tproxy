@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -77,10 +78,10 @@ func (c *PairedConnection) handleServerMessage() {
 	c.copyData(tee, c.svrConn, protocol.ServerSide)
 }
 
-func (c *PairedConnection) process() {
+func (c *PairedConnection) process(parent string) {
 	defer c.stop()
 
-	conn, err := net.Dial("tcp", settings.Remote)
+	conn, err := net.Dial("tcp", parent)
 	if err != nil {
 		display.PrintlnWithTime(color.HiRedString("[x][%d] Couldn't connect to server: %v", c.id, err))
 		return
@@ -111,11 +112,29 @@ func (c *PairedConnection) stop() {
 	})
 }
 
-func startListener(hexDumper protocol.HexDumper) error {
+func startListener(hexDumper protocol.HexDumper) {
 	stat = NewStater(NewConnCounter(), NewStatPrinter(statInterval))
 	go stat.Start()
 
-	conn, err := net.Listen("tcp", fmt.Sprintf("%s:%d", settings.LocalHost, settings.LocalPort))
+	var wg sync.WaitGroup
+	for i, local := range settings.Local {
+		wg.Add(1)
+
+		go func(local, parent string) {
+			defer wg.Done()
+
+			if err := startListenerSingle(hexDumper, local, parent); err != nil {
+				fmt.Fprintln(os.Stderr, color.HiRedString("[x] Failed to start listener: %v", err))
+			}
+		}(local, settings.Parent[i])
+
+	}
+
+	wg.Wait()
+}
+
+func startListenerSingle(hexDumper protocol.HexDumper, local, parent string) error {
+	conn, err := net.Listen("tcp", local)
 	if err != nil {
 		return fmt.Errorf("failed to start listener: %w", err)
 	}
@@ -135,6 +154,6 @@ func startListener(hexDumper protocol.HexDumper) error {
 			connIndex, cliConn.RemoteAddr()))
 
 		pconn := NewPairedConnection(connIndex, cliConn, hexDumper)
-		go pconn.process()
+		go pconn.process(parent)
 	}
 }

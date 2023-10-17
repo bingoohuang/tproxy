@@ -13,11 +13,10 @@ var settings Settings
 
 func main() {
 	var (
-		localPort    = flag.IntP("port", "p", 0, "Local port to listen on, default to pick a random port")
+		local        = flag.StringArrayP("local", "p", []string{":33000"}, "Local ip:port to listen")
 		width        = flag.IntP("width", "w", 32, "Number of bytes in each hex dump row (use 0 to turn off).")
 		printStrings = flag.BoolP("strings", "S", true, "Print UTF-8 strings after hex dump")
-		localHost    = flag.StringP("listen", "l", "localhost", "Local address to listen on")
-		remote       = flag.StringP("remote", "r", "", "Remote address (host:port) to connect")
+		parent       = flag.StringArrayP("parent", "P", nil, "Parent address, such as: \"23.32.32.19:28008\"")
 		delay        = flag.DurationP("delay", "d", 0, "the delay to relay packets")
 		protocol     = flag.StringP("type", "t", "", "The type of protocol, currently support http2, grpc, redis and mongodb")
 		enableStats  = flag.BoolP("stat", "s", false, "Enable statistics")
@@ -31,10 +30,16 @@ func main() {
 	}
 
 	flag.Parse()
-	saveSettings(*localHost, *localPort, *remote, *delay, *protocol, *enableStats, *quiet)
+	saveSettings(*local, *parent, *delay, *protocol, *enableStats, *quiet)
 
-	if len(settings.Remote) == 0 {
-		fmt.Fprintln(os.Stderr, color.HiRedString("[x] Remote target required"))
+	if len(settings.Parent) == 0 {
+		fmt.Fprintln(os.Stderr, color.HiRedString("[x] Parent target required"))
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	if len(settings.Local) != len(settings.Parent) {
+		fmt.Fprintln(os.Stderr, color.HiRedString("[x] Local/Parent mismatched"))
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -44,8 +49,5 @@ func main() {
 		dumper = hexdump.Config{Width: *width, PrintStrings: *printStrings}.Dump
 	}
 
-	if err := startListener(dumper); err != nil {
-		fmt.Fprintln(os.Stderr, color.HiRedString("[x] Failed to start listener: %v", err))
-		os.Exit(1)
-	}
+	startListener(dumper)
 }
