@@ -3,8 +3,9 @@ package main
 import "time"
 
 type Settings struct {
-	Parent    []string
 	Local     []string
+	Parent    []string
+	Target    []string
 	Protocol  string
 	LocalPort int
 	Delay     time.Duration
@@ -12,11 +13,12 @@ type Settings struct {
 	Quiet     bool
 }
 
-func saveSettings(local, parent []string, delay time.Duration,
+func saveSettings(local, parent, target []string, delay time.Duration,
 	protocol string, stat, quiet bool,
 ) {
 	settings.Local = local
 	settings.Parent = parent
+	settings.Target = target
 	settings.Delay = delay
 	settings.Protocol = protocol
 	settings.Stat = stat

@@ -1,9 +1,12 @@
 package main
 
 import (
+	"crypto/sha1"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"os"
 	"strconv"
@@ -78,16 +81,42 @@ func (c *PairedConnection) handleServerMessage() {
 	c.copyData(tee, c.svrConn, protocol.ServerSide)
 }
 
-func (c *PairedConnection) process(parent string) {
+func expandAddr(addr string) string {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		log.Panicf("invalid %s, should [host]:port", addr)
+	}
+
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	if l := port[0]; 'a' <= l && l <= 'z' || 'A' <= l && l <= 'Z' {
+		h := sha1.New()
+		h.Write([]byte(port))
+		sum := h.Sum(nil)
+		portNum := binary.BigEndian.Uint16(sum[:2])
+		port = fmt.Sprintf("%d", portNum)
+	}
+
+	return host + ":" + port
+}
+
+func (c *PairedConnection) process(parent, target string) {
 	defer c.stop()
 
-	conn, err := net.Dial("tcp", parent)
+	parentExpand := expandAddr(parent)
+	conn, err := net.Dial("tcp", parentExpand)
 	if err != nil {
 		display.PrintlnWithTime(color.HiRedString("[x][%d] Couldn't connect to server: %v", c.id, err))
 		return
 	}
 
 	display.PrintlnWithTime(color.HiGreenString("[%d] Connected to server: %s", c.id, conn.RemoteAddr()))
+
+	if target != "" {
+		targetExpand := expandAddr(target)
+		_, _ = conn.Write([]byte("TARGET " + targetExpand + ";"))
+	}
 
 	stat.AddConn(strconv.Itoa(c.id), conn.(*net.TCPConn))
 	c.svrConn = conn
@@ -120,20 +149,25 @@ func startListener(hexDumper protocol.HexDumper) {
 	for i, local := range settings.Local {
 		wg.Add(1)
 
-		go func(local, parent string) {
+		target := ""
+		if len(settings.Target) > i {
+			target = settings.Target[i]
+		}
+
+		go func(local, parent, target string) {
 			defer wg.Done()
 
-			if err := startListenerSingle(hexDumper, local, parent); err != nil {
+			if err := startListenerSingle(hexDumper, local, parent, target); err != nil {
 				fmt.Fprintln(os.Stderr, color.HiRedString("[x] Failed to start listener: %v", err))
 			}
-		}(local, settings.Parent[i])
+		}(local, settings.Parent[i], target)
 
 	}
 
 	wg.Wait()
 }
 
-func startListenerSingle(hexDumper protocol.HexDumper, local, parent string) error {
+func startListenerSingle(hexDumper protocol.HexDumper, local, parent, target string) error {
 	conn, err := net.Listen("tcp", local)
 	if err != nil {
 		return fmt.Errorf("failed to start listener: %w", err)
@@ -154,6 +188,6 @@ func startListenerSingle(hexDumper protocol.HexDumper, local, parent string) err
 			connIndex, cliConn.RemoteAddr()))
 
 		pconn := NewPairedConnection(connIndex, cliConn, hexDumper)
-		go pconn.process(parent)
+		go pconn.process(parent, target)
 	}
 }
