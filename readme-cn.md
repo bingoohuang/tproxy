@@ -45,6 +45,8 @@ $ tproxy --help
 Usage of tproxy:
   -d duration
     	the delay to relay packets
+  -down int
+    	Downward speed limit(bytes/second)
   -l string
     	Local address to listen on (default "localhost")
   -p int
@@ -55,6 +57,8 @@ Usage of tproxy:
   -s	Enable statistics
   -t string
     	The type of protocol, currently support http2, grpc, redis and mongodb
+  -up int
+    	Upward speed limit(bytes/second)
 ```
 
 ## 示例
