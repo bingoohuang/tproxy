@@ -11,10 +11,12 @@ type Settings struct {
 	Delay     time.Duration
 	Stat      bool
 	Quiet     bool
+	UpLimit   float64
+	DownLimit float64
 }
 
 func saveSettings(local, parent, target []string, delay time.Duration,
-	protocol string, stat, quiet bool,
+	protocol string, stat, quiet bool, upLimit, downLimit float64,
 ) {
 	settings.Local = local
 	settings.Parent = parent
@@ -23,4 +25,6 @@ func saveSettings(local, parent, target []string, delay time.Duration,
 	settings.Protocol = protocol
 	settings.Stat = stat
 	settings.Quiet = quiet
+	settings.UpLimit = upLimit
+	settings.DownLimit = downLimit
 }

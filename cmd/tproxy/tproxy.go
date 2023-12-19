@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/bingoohuang/gg/pkg/man"
 	"github.com/bingoohuang/godaemon"
 	"github.com/bingoohuang/tproxy/hexdump"
 	"github.com/fatih/color"
@@ -43,8 +44,11 @@ func main() {
 	protocol := flag.StringP("type", "t", "", "The type of protocol, currently support http2, grpc, redis and mongodb")
 	enableStats := flag.BoolP("stat", "s", false, "Enable statistics")
 	daemon := flag.BoolP("daemon", "D", false, "Daemonize")
-	quiet := flag.BoolP("quiet", "q", false,
-		"Quiet mode, only prints connection open/close and stats, default false")
+	quiet := flag.Bool("q", false, "Quiet mode, only prints connection open/close and stats, default false")
+	upLimit := NewRateLimitFlag()
+	downLimit := NewRateLimitFlag()
+	flag.Var(upLimit, "up", "Upward speed limit per second, like 1K")
+	flag.Var(downLimit, "down", "Downward speed limit per second, like 1K")
 
 	flag.Parse()
 
@@ -52,7 +56,7 @@ func main() {
 		width.value = 0
 	}
 
-	saveSettings(*local, *parent, *target, *delay, *protocol, *enableStats, *quiet)
+	saveSettings(*local, *parent, *target, *delay, *protocol, *enableStats, *quiet, upLimit.Float64(), downLimit.Float64())
 
 	if len(settings.Parent) == 0 {
 		fmt.Fprintln(os.Stderr, color.HiRedString("[x] Parent target required"))
@@ -75,3 +79,36 @@ func main() {
 
 	startListener(dumper)
 }
+
+func NewRateLimitFlag() *RateLimitFlag {
+	return &RateLimitFlag{}
+}
+
+type RateLimitFlag struct {
+	Val *uint64
+}
+
+func (i *RateLimitFlag) Type() string { return "rateLimit" }
+
+func (i *RateLimitFlag) Enabled() bool { return i.Val != nil && *i.Val > 0 }
+
+func (i *RateLimitFlag) String() string {
+	if !i.Enabled() {
+		return "0"
+	}
+
+	s := man.Bytes(*i.Val)
+	return s
+}
+
+func (i *RateLimitFlag) Set(value string) (err error) {
+	val, err := man.ParseBytes(value)
+	if err != nil {
+		return err
+	}
+
+	i.Val = &val
+	return nil
+}
+
+func (i *RateLimitFlag) Float64() float64 { return float64(*i.Val) }

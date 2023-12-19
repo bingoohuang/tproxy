@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bingoohuang/goup/shapeio"
 	"github.com/bingoohuang/tproxy/display"
 	"github.com/bingoohuang/tproxy/protocol"
 	"github.com/fatih/color"
@@ -48,7 +49,11 @@ func NewPairedConnection(id int, cliConn net.Conn, hexDumper protocol.HexDumper)
 	}
 }
 
-func (c *PairedConnection) copyData(dst io.Writer, src io.Reader, tag string) {
+func (c *PairedConnection) copyData(dst io.Writer, src io.Reader, tag string, limit float64) {
+	if limit > 0 {
+		src = shapeio.NewReader(src, shapeio.WithRateLimit(limit))
+	}
+
 	_, e := io.Copy(dst, src)
 	if e != nil && !errors.Is(e, io.EOF) {
 		var netOpError *net.OpError
@@ -67,7 +72,7 @@ func (c *PairedConnection) handleClientMessage() {
 	tee := io.MultiWriter(c.svrConn, w)
 	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
 	go interop.Dump(r, protocol.ClientSide, c.id, settings.Quiet)
-	c.copyData(tee, c.cliConn, protocol.ClientSide)
+	c.copyData(tee, c.cliConn, protocol.ClientSide, settings.UpLimit)
 }
 
 func (c *PairedConnection) handleServerMessage() {
@@ -78,7 +83,7 @@ func (c *PairedConnection) handleServerMessage() {
 	tee := io.MultiWriter(newDelayedWriter(c.cliConn, settings.Delay, c.stopChan), w)
 	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
 	go interop.Dump(r, protocol.ServerSide, c.id, settings.Quiet)
-	c.copyData(tee, c.svrConn, protocol.ServerSide)
+	c.copyData(tee, c.svrConn, protocol.ServerSide, settings.DownLimit)
 }
 
 func expandAddr(addr string) string {
