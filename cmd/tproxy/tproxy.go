@@ -111,4 +111,9 @@ func (i *RateLimitFlag) Set(value string) (err error) {
 	return nil
 }
 
-func (i *RateLimitFlag) Float64() float64 { return float64(*i.Val) }
+func (i *RateLimitFlag) Float64() float64 {
+	if i.Val == nil {
+		return 0
+	}
+	return float64(*i.Val)
+}
