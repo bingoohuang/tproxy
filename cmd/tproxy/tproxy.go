@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/bingoohuang/gg/pkg/man"
 	"github.com/bingoohuang/godaemon"
@@ -11,6 +12,19 @@ import (
 	"github.com/fatih/color"
 	flag "github.com/spf13/pflag"
 )
+
+type Settings struct {
+	Local     []string
+	Parent    []string
+	Target    []string
+	Protocol  string
+	LocalPort int
+	Delay     time.Duration
+	Stat      bool
+	Quiet     bool
+	UpLimit   float64
+	DownLimit float64
+}
 
 var settings Settings
 
@@ -34,29 +48,23 @@ func (i *intValue) String() string { return strconv.Itoa(i.value) }
 
 func main() {
 	width := newIntValue(32)
-
 	flag.VarP(width, "width", "w", "Number of bytes in each hex dump row (use 0 to turn off).")
-	local := flag.StringArrayP("local", "p", []string{":33000"}, "Local ip:port to listen")
+	flag.StringArrayVarP(&settings.Local, "local", "p", []string{":33000"}, "Local ip:port to listen")
 	printStrings := flag.BoolP("strings", "S", true, "Print UTF-8 strings after hex dump")
-	parent := flag.StringArrayP("parent", "P", nil, `Parent address, such as: "23.32.32.19:28008"`)
-	target := flag.StringArrayP("target", "T", nil, `Target address, such as: "23.32.32.19:28008"，配合 frpc 使用`)
-	delay := flag.DurationP("delay", "d", 0, "the delay to relay packets")
-	protocol := flag.StringP("type", "t", "", "The type of protocol, currently support http2, grpc, redis and mongodb")
-	enableStats := flag.BoolP("stat", "s", false, "Enable statistics")
+	flag.StringArrayVarP(&settings.Parent, "parent", "P", nil, `Parent address, such as: "23.32.32.19:28008"`)
+	flag.StringArrayVarP(&settings.Target, "target", "T", nil, `Target address, such as: "23.32.32.19:28008"，配合 frpc 使用`)
+	flag.DurationVarP(&settings.Delay, "delay", "d", 0, "the delay to relay packets")
+	flag.StringVarP(&settings.Protocol, "type", "t", "", "The type of protocol, currently support http2, grpc, redis and mongodb")
+	flag.BoolVarP(&settings.Stat, "stat", "s", false, "Enable statistics")
 	daemon := flag.BoolP("daemon", "D", false, "Daemonize")
-	quiet := flag.Bool("q", false, "Quiet mode, only prints connection open/close and stats, default false")
-	upLimit := NewRateLimitFlag()
-	downLimit := NewRateLimitFlag()
-	flag.Var(upLimit, "up", "Upward speed limit per second, like 1K")
-	flag.Var(downLimit, "down", "Downward speed limit per second, like 1K")
-
+	flag.BoolVarP(&settings.Quiet, "quiet", "q", false, "Quiet mode, only prints connection open/close and stats, default false")
+	flag.Var(NewRateLimitFlag(&settings.UpLimit), "up", "Upward speed limit per second, like 1K")
+	flag.Var(NewRateLimitFlag(&settings.DownLimit), "down", "Downward speed limit per second, like 1K")
 	flag.Parse()
 
-	if !width.set && (len(*target) > 0 || len(*local) > 1) {
+	if !width.set && (len(settings.Target) > 0 || len(settings.Local) > 1) {
 		width.value = 0
 	}
-
-	saveSettings(*local, *parent, *target, *delay, *protocol, *enableStats, *quiet, upLimit.Float64(), downLimit.Float64())
 
 	if len(settings.Parent) == 0 {
 		fmt.Fprintln(os.Stderr, color.HiRedString("[x] Parent target required"))
@@ -80,24 +88,18 @@ func main() {
 	startListener(dumper)
 }
 
-func NewRateLimitFlag() *RateLimitFlag {
-	return &RateLimitFlag{}
+func NewRateLimitFlag(val *float64) *RateLimitFlag {
+	return &RateLimitFlag{Val: val}
 }
 
 type RateLimitFlag struct {
-	Val *uint64
+	Val *float64
 }
 
 func (i *RateLimitFlag) Type() string { return "rateLimit" }
 
-func (i *RateLimitFlag) Enabled() bool { return i.Val != nil && *i.Val > 0 }
-
 func (i *RateLimitFlag) String() string {
-	if !i.Enabled() {
-		return "0"
-	}
-
-	s := man.Bytes(*i.Val)
+	s := man.Bytes(uint64(*i.Val))
 	return s
 }
 
@@ -107,13 +109,10 @@ func (i *RateLimitFlag) Set(value string) (err error) {
 		return err
 	}
 
-	i.Val = &val
+	*i.Val = float64(val)
 	return nil
 }
 
 func (i *RateLimitFlag) Float64() float64 {
-	if i.Val == nil {
-		return 0
-	}
-	return float64(*i.Val)
+	return *i.Val
 }

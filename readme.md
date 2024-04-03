@@ -102,3 +102,15 @@ $ tproxy -p 3307 -r localhost:3306 -q -s
 ## Give a Star! ⭐
 
 If you like or are using this project, please give it a **star**. Thanks!
+
+## scripts
+
+- `docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 -d mysql`
+- `docker search docker-oracle-xe-11g`
+- `docker run -h oracle --name oracle -d -p 15210:22 -p 15211:1521 -p 15213:8080 deepdiver/docker-oracle-xe-11g`
+- `%connect oracle://system:oracle@127.0.0.1:15211/xe`
+- `docker run -h oracle --name oracle -d -p 15210:22 -p 15211:1521 -p 15213:8080 epiclabs/docker-oracle-xe-11g`
+
+- https://hub.docker.com/r/pengbai/docker-oracle-xe-11g-r2
+- oracle xe 11g r2 with sql initdb and web console
+- `docker run -d -p 8080:8080 -p 1521:1521 pengbai/docker-oracle-xe-11g-r2`

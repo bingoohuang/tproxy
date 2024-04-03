@@ -12,11 +12,13 @@ const (
 	ServerSide = "SERVER"
 	ClientSide = "CLIENT"
 
-	bufferSize    = 1 << 20
-	grpcProtocol  = "grpc"
-	http2Protocol = "http2"
-	redisProtocol = "redis"
-	mongoProtocol = "mongo"
+	bufferSize     = 1 << 20
+	grpcProtocol   = "grpc"
+	http2Protocol  = "http2"
+	redisProtocol  = "redis"
+	mysqlProtocol  = "mysql"
+	oracleProtocol = "oracle"
+	mongoProtocol  = "mongo"
 )
 
 type (
@@ -35,6 +37,10 @@ func CreateInterop(protocol string, hexDumper HexDumper, printLock *sync.Mutex) 
 		}
 	case http2Protocol:
 		return new(http2Interop)
+	case mysqlProtocol:
+		return new(mysqlInterop)
+	case oracleProtocol:
+		return new(oracleInterop)
 	case redisProtocol:
 		return new(redisInterop)
 	case mongoProtocol:

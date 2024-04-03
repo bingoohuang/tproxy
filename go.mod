@@ -5,6 +5,7 @@ go 1.21
 toolchain go1.22.1
 
 require (
+	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/bingoohuang/gg v0.0.0-20240325092523-45da7dee9335
 	github.com/bingoohuang/godaemon v0.0.0-20240322110523-6a8404a26d17
 	github.com/bingoohuang/goup v0.0.0-20231205021806-3d76ee343e0d
