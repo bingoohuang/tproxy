@@ -5,16 +5,15 @@ go 1.21
 toolchain go1.22.1
 
 require (
-	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
-	github.com/bingoohuang/gg v0.0.0-20240325092523-45da7dee9335
+	github.com/bingoohuang/gg v0.0.0-20240411023808-e8daaa707b8b
 	github.com/bingoohuang/godaemon v0.0.0-20240322110523-6a8404a26d17
 	github.com/bingoohuang/goup v0.0.0-20231205021806-3d76ee343e0d
-	github.com/fatih/color v1.16.0
+	github.com/fatih/color v1.17.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/pflag v1.0.5
-	go.mongodb.org/mongo-driver v1.14.0
-	golang.org/x/net v0.22.0
-	google.golang.org/protobuf v1.33.0
+	go.mongodb.org/mongo-driver v1.15.0
+	golang.org/x/net v0.25.0
+	google.golang.org/protobuf v1.34.1
 )
 
 require (
@@ -25,7 +24,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )
