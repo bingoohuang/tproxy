@@ -54,7 +54,7 @@ func main() {
 	flag.StringArrayVarP(&settings.Parent, "parent", "P", nil, `Parent address, such as: "23.32.32.19:28008"`)
 	flag.StringArrayVarP(&settings.Target, "target", "T", nil, `Target address, such as: "23.32.32.19:28008"，配合 frpc 使用`)
 	flag.DurationVarP(&settings.Delay, "delay", "d", 0, "the delay to relay packets")
-	flag.StringVarP(&settings.Protocol, "type", "t", "", "The type of protocol, currently support http2, grpc, redis and mongodb")
+	flag.StringVarP(&settings.Protocol, "type", "t", "", "The type of protocol, currently support http, http2, grpc, redis and mongodb")
 	flag.BoolVarP(&settings.Stat, "stat", "s", false, "Enable statistics")
 	daemon := flag.BoolP("daemon", "D", false, "Daemonize")
 	flag.BoolVarP(&settings.Quiet, "quiet", "q", false, "Quiet mode, only prints connection open/close and stats, default false")

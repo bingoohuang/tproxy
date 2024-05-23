@@ -15,6 +15,7 @@ const (
 	bufferSize     = 1 << 20
 	grpcProtocol   = "grpc"
 	http2Protocol  = "http2"
+	httpProtocol   = "http"
 	redisProtocol  = "redis"
 	mysqlProtocol  = "mysql"
 	oracleProtocol = "oracle"
@@ -35,6 +36,8 @@ func CreateInterop(protocol string, hexDumper HexDumper, printLock *sync.Mutex) 
 			explainer: new(grpcExplainer),
 			hexDumper: hexDumper,
 		}
+	case httpProtocol:
+		return newHttpInterop()
 	case http2Protocol:
 		return new(http2Interop)
 	case mysqlProtocol:

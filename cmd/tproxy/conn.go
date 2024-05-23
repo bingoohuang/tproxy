@@ -69,6 +69,8 @@ func (c *PairedConnection) handleClientMessage() {
 	defer c.stop()
 
 	r, w := io.Pipe()
+	defer r.Close()
+
 	tee := io.MultiWriter(c.svrConn, w)
 	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
 	go interop.Dump(r, protocol.ClientSide, c.id, settings.Quiet)
@@ -80,6 +82,8 @@ func (c *PairedConnection) handleServerMessage() {
 	defer c.stop()
 
 	r, w := io.Pipe()
+	defer r.Close()
+
 	tee := io.MultiWriter(newDelayedWriter(c.cliConn, settings.Delay, c.stopChan), w)
 	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
 	go interop.Dump(r, protocol.ServerSide, c.id, settings.Quiet)
@@ -107,8 +111,6 @@ func expandAddr(addr string) string {
 }
 
 func (c *PairedConnection) process(parent, target string) {
-	defer c.stop()
-
 	parentExpand := expandAddr(parent)
 	conn, err := net.Dial("tcp", parentExpand)
 	if err != nil {
@@ -125,9 +127,9 @@ func (c *PairedConnection) process(parent, target string) {
 
 	stat.AddConn(strconv.Itoa(c.id), conn.(*net.TCPConn))
 	c.svrConn = conn
-	go c.handleServerMessage()
 
-	c.handleClientMessage()
+	go c.handleServerMessage()
+	go c.handleClientMessage()
 }
 
 func (c *PairedConnection) stop() {

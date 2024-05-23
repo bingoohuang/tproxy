@@ -114,3 +114,9 @@ If you like or are using this project, please give it a **star**. Thanks!
 - https://hub.docker.com/r/pengbai/docker-oracle-xe-11g-r2
 - oracle xe 11g r2 with sql initdb and web console
 - `docker run -d -p 8080:8080 -p 1521:1521 pengbai/docker-oracle-xe-11g-r2`
+
+## TODO
+
+- [ ] 服务端 `tproxy -p :29200 -P 127.0.0.01:19200 -t http` 
+  客户端 poc olivere-es 时 不能正常打印响应体 `olivere-es -U http://127.0.0.1:29200 -n 2 --trace`,
+  客户端 gurl 时正常打印 `gurl 'name=@姓名' 'sex=@random(男,女)' 'addr=@地址' 'idcard=@身份证' :29200/person/_doc/@ksuid -prU`
