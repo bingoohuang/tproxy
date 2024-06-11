@@ -50,7 +50,7 @@ func main() {
 	width := newIntValue(32)
 	flag.VarP(width, "width", "w", "Number of bytes in each hex dump row (use 0 to turn off).")
 	flag.StringArrayVarP(&settings.Local, "local", "p", []string{":33000"}, "Local ip:port to listen")
-	printStrings := flag.BoolP("strings", "S", true, "Print UTF-8 strings after hex dump")
+	printStrings := flag.BoolP("strings", "S", false, "Print UTF-8 strings after hex dump")
 	flag.StringArrayVarP(&settings.Parent, "parent", "P", nil, `Parent address, such as: "23.32.32.19:28008"`)
 	flag.StringArrayVarP(&settings.Target, "target", "T", nil, `Target address, such as: "23.32.32.19:28008"，配合 frpc 使用`)
 	flag.DurationVarP(&settings.Delay, "delay", "d", 0, "the delay to relay packets")
