@@ -20,6 +20,7 @@ const (
 	mysqlProtocol  = "mysql"
 	oracleProtocol = "oracle"
 	mongoProtocol  = "mongo"
+	mqttProtocol   = "mqtt"
 )
 
 type (
@@ -40,6 +41,7 @@ func CreateInterop(protocol string, hexDumper HexDumper, printLock *sync.Mutex) 
 		return newHttpInterop()
 	case http2Protocol:
 		return new(http2Interop)
+		
 	case mysqlProtocol:
 		return new(mysqlInterop)
 	case oracleProtocol:
@@ -48,6 +50,8 @@ func CreateInterop(protocol string, hexDumper HexDumper, printLock *sync.Mutex) 
 		return new(redisInterop)
 	case mongoProtocol:
 		return new(mongoInterop)
+	case mqttProtocol:
+		return new(mqttInterop)
 	default:
 		return &defaultInterop{
 			hexDumper: hexDumper,

@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bingoohuang/goup/shapeio"
+	"github.com/bingoohuang/ngg/goup/shapeio"
 	"github.com/bingoohuang/tproxy/display"
 	"github.com/bingoohuang/tproxy/protocol"
 	"github.com/fatih/color"

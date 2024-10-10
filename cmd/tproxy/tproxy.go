@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bingoohuang/gg/pkg/man"
-	"github.com/bingoohuang/godaemon"
+	"github.com/bingoohuang/ngg/daemon"
+	"github.com/bingoohuang/ngg/ss"
 	"github.com/bingoohuang/tproxy/hexdump"
 	"github.com/fatih/color"
 	flag "github.com/spf13/pflag"
@@ -56,7 +56,7 @@ func main() {
 	flag.DurationVarP(&settings.Delay, "delay", "d", 0, "the delay to relay packets")
 	flag.StringVarP(&settings.Protocol, "type", "t", "", "The type of protocol, currently support http, http2, grpc, redis and mongodb")
 	flag.BoolVarP(&settings.Stat, "stat", "s", false, "Enable statistics")
-	daemon := flag.BoolP("daemon", "D", false, "Daemonize")
+	pDaemon := flag.BoolP("daemon", "D", false, "Daemonize")
 	flag.BoolVarP(&settings.Quiet, "quiet", "q", false, "Quiet mode, only prints connection open/close and stats, default false")
 	flag.Var(NewRateLimitFlag(&settings.UpLimit), "up", "Upward speed limit per second, like 1K")
 	flag.Var(NewRateLimitFlag(&settings.DownLimit), "down", "Downward speed limit per second, like 1K")
@@ -78,7 +78,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	godaemon.Daemonize(godaemon.WithDaemon(*daemon))
+	if *pDaemon {
+		daemon.Option{}.Daemonize()
+	}
 
 	var dumper func(data []byte) string
 	if width.value > 0 {
@@ -99,12 +101,12 @@ type RateLimitFlag struct {
 func (i *RateLimitFlag) Type() string { return "rateLimit" }
 
 func (i *RateLimitFlag) String() string {
-	s := man.Bytes(uint64(*i.Val))
+	s := ss.Bytes(uint64(*i.Val))
 	return s
 }
 
 func (i *RateLimitFlag) Set(value string) (err error) {
-	val, err := man.ParseBytes(value)
+	val, err := ss.ParseBytes(value)
 	if err != nil {
 		return err
 	}

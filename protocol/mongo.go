@@ -30,10 +30,10 @@ const (
 type mongoInterop struct{}
 
 type packet struct {
-	Payload       io.Reader
-	MessageLength int
-	OpCode        int  // request type
 	IsClientFlow  bool // client->server
+	MessageLength int
+	OpCode        int // request type
+	Payload       io.Reader
 }
 
 func (mongo *mongoInterop) Dump(r io.Reader, source string, id int, quiet bool) {
