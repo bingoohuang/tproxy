@@ -49,13 +49,40 @@ func NewPairedConnection(id int, cliConn net.Conn, hexDumper protocol.HexDumper)
 	}
 }
 
-func (c *PairedConnection) copyData(dst io.Writer, src io.Reader, tag string, limit float64) {
+type IdleConn struct {
+	net.Conn
+	idleTimeout time.Duration
+}
+
+func (c *IdleConn) Read(b []byte) (int, error) {
+	if err := c.Conn.SetReadDeadline(time.Now().Add(c.idleTimeout)); err != nil {
+		log.Printf("SetReadDeadline error: %v", err)
+	}
+
+	n, err := c.Conn.Read(b)
+	if err != nil {
+		var e net.Error
+		if errors.As(err, &e) && e.Timeout() { // 如果是超时错误或者连接关闭错误，则退出
+			log.Printf("Connection idle timeout %s, closing %s", c.idleTimeout, c.Conn.RemoteAddr())
+			err = io.EOF
+		}
+	}
+
+	return n, err
+
+}
+
+func (c *PairedConnection) copyData(dst io.Writer, srcConn net.Conn, tag string, limit float64, idleTimeout time.Duration) {
+	if idleTimeout > 0 {
+		srcConn = &IdleConn{Conn: srcConn, idleTimeout: idleTimeout}
+	}
+
+	var src io.Reader = srcConn
 	if limit > 0 {
 		src = shapeio.NewReader(src, shapeio.WithRateLimit(limit))
 	}
 
-	_, e := io.Copy(dst, src)
-	if e != nil && !errors.Is(e, io.EOF) {
+	if _, e := io.Copy(dst, src); e != nil && !errors.Is(e, io.EOF) {
 		var netOpError *net.OpError
 		if errors.As(e, &netOpError) && netOpError.Err.Error() != useOfClosedConn {
 			reason := netOpError.Unwrap().Error()
@@ -74,7 +101,7 @@ func (c *PairedConnection) handleClientMessage() {
 	tee := io.MultiWriter(c.svrConn, w)
 	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
 	go interop.Dump(r, protocol.ClientSide, c.id, settings.Quiet)
-	c.copyData(tee, c.cliConn, protocol.ClientSide, settings.UpLimit)
+	c.copyData(tee, c.cliConn, protocol.ClientSide, settings.UpLimit, settings.IdleTimeout)
 }
 
 func (c *PairedConnection) handleServerMessage() {
@@ -87,7 +114,7 @@ func (c *PairedConnection) handleServerMessage() {
 	tee := io.MultiWriter(newDelayedWriter(c.cliConn, settings.Delay, c.stopChan), w)
 	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
 	go interop.Dump(r, protocol.ServerSide, c.id, settings.Quiet)
-	c.copyData(tee, c.svrConn, protocol.ServerSide, settings.DownLimit)
+	c.copyData(tee, c.svrConn, protocol.ServerSide, settings.DownLimit, settings.IdleTimeout)
 }
 
 func expandAddr(addr string) string {

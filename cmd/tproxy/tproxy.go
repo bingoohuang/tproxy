@@ -14,16 +14,17 @@ import (
 )
 
 type Settings struct {
-	Local     []string
-	Parent    []string
-	Target    []string
-	Protocol  string
-	LocalPort int
-	Delay     time.Duration
-	Stat      bool
-	Quiet     bool
-	UpLimit   float64
-	DownLimit float64
+	Local       []string
+	Parent      []string
+	Target      []string
+	Protocol    string
+	LocalPort   int
+	Delay       time.Duration
+	IdleTimeout time.Duration
+	Stat        bool
+	Quiet       bool
+	UpLimit     float64
+	DownLimit   float64
 }
 
 var settings Settings
@@ -54,6 +55,7 @@ func main() {
 	flag.StringArrayVarP(&settings.Parent, "parent", "P", nil, `Parent address, such as: "23.32.32.19:28008"`)
 	flag.StringArrayVarP(&settings.Target, "target", "T", nil, `Target address, such as: "23.32.32.19:28008"，配合 frpc 使用`)
 	flag.DurationVarP(&settings.Delay, "delay", "d", 0, "the delay to relay packets")
+	flag.DurationVarP(&settings.IdleTimeout, "idle", "", 0, "idle timeout for the connections")
 	flag.StringVarP(&settings.Protocol, "type", "t", "", "The type of protocol, currently support http, http2, grpc, redis and mongodb")
 	flag.BoolVarP(&settings.Stat, "stat", "s", false, "Enable statistics")
 	pDaemon := flag.BoolP("daemon", "D", false, "Daemonize")

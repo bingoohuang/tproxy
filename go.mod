@@ -5,9 +5,9 @@ go 1.22.0
 toolchain go1.23.2
 
 require (
-	github.com/bingoohuang/ngg/daemon v0.0.0-20241009031736-97f5aabbef17
+	github.com/bingoohuang/ngg/daemon v0.0.0-20241020070958-66c07e9d72b2
 	github.com/bingoohuang/ngg/goup v0.0.0-20240919022203-b1debd4511c9
-	github.com/bingoohuang/ngg/ss v0.0.0-20241009031736-97f5aabbef17
+	github.com/bingoohuang/ngg/ss v0.0.0-20241020070958-66c07e9d72b2
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/fatih/color v1.17.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -18,9 +18,9 @@ require (
 )
 
 require (
-	github.com/bingoohuang/ngg/q v0.0.0-20241009031736-97f5aabbef17 // indirect
-	github.com/bingoohuang/ngg/ver v0.0.0-20241009031736-97f5aabbef17 // indirect
-	github.com/bingoohuang/ngg/yaml v0.0.0-20241009031736-97f5aabbef17 // indirect
+	github.com/bingoohuang/ngg/q v0.0.0-20241020070958-66c07e9d72b2 // indirect
+	github.com/bingoohuang/ngg/ver v0.0.0-20241020070958-66c07e9d72b2 // indirect
+	github.com/bingoohuang/ngg/yaml v0.0.0-20241020070958-66c07e9d72b2 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef // indirect
