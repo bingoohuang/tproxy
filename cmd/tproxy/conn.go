@@ -202,6 +202,13 @@ func startListener(hexDumper protocol.HexDumper) {
 }
 
 func startListenerSingle(hexDumper protocol.HexDumper, local, parent, target string) error {
+	if _, ok := ParsePort((local)); ok {
+		local = "127.0.0.1:" + local
+	}
+	if _, ok := ParsePort((parent)); ok {
+		parent = "127.0.0.1:" + parent
+	}
+
 	conn, err := net.Listen("tcp", local)
 	if err != nil {
 		return fmt.Errorf("failed to start listener: %w", err)
@@ -224,4 +231,18 @@ func startListenerSingle(hexDumper protocol.HexDumper, local, parent, target str
 		pconn := NewPairedConnection(connIndex, cliConn, hexDumper)
 		go pconn.process(parent, target)
 	}
+}
+
+func ParsePort(portStr string) (int, bool) {
+	// 将字符串转换为整数
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return 0, false
+	}
+
+	// 检查端口是否在有效范围内
+	if port >= 0 && port <= 65535 {
+		return port, true
+	}
+	return 0, false
 }

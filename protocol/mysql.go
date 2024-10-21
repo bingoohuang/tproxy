@@ -130,11 +130,6 @@ func processOkResponse(sequenceId byte, payload []byte) {
 		return
 	}
 
-	if err != nil {
-		display.PrintlnWithTime(color.HiRedString("Failed reading length encoded integer: " + err.Error()))
-		return
-	}
-
 	statusFlag, ok = statusFlagMap[binary.LittleEndian.Uint16(remaining[:2])]
 	if !ok {
 		statusFlag = "unknown"
