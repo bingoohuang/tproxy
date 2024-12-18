@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -115,9 +116,24 @@ func (c *PairedConnection) handleServerMessage() {
 	interop := protocol.CreateInterop(settings.Protocol, c.hexDumper, &c.printLock)
 	go interop.Dump(r, protocol.ServerSide, c.id, settings.Quiet)
 	c.copyData(tee, c.svrConn, protocol.ServerSide, settings.DownLimit, settings.IdleTimeout)
+
 }
 
-func expandAddr(addr string) string {
+type Addr struct {
+	Proto string
+	Addr  string
+}
+
+func expandAddr(addr string) Addr {
+	// 解析示例 tcp://127.0.0.1:8090 -d unix:///var/run/docker.sock
+	parts := strings.SplitN(addr, "://", 2)
+	if len(parts) == 2 {
+		return Addr{
+			Proto: parts[0],
+			Addr:  parts[1],
+		}
+	}
+
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		log.Panicf("invalid %s, should [host]:port", addr)
@@ -134,12 +150,15 @@ func expandAddr(addr string) string {
 		port = fmt.Sprintf("%d", portNum)
 	}
 
-	return host + ":" + port
+	return Addr{
+		Proto: "tcp",
+		Addr:  host + ":" + port,
+	}
 }
 
 func (c *PairedConnection) process(parent, target string) {
 	parentExpand := expandAddr(parent)
-	conn, err := net.Dial("tcp", parentExpand)
+	conn, err := net.Dial(parentExpand.Proto, parentExpand.Addr)
 	if err != nil {
 		display.PrintlnWithTime(color.HiRedString("[x][%d] Couldn't connect to server: %v", c.id, err))
 		return
@@ -149,10 +168,12 @@ func (c *PairedConnection) process(parent, target string) {
 
 	if target != "" {
 		targetExpand := expandAddr(target)
-		_, _ = conn.Write([]byte("TARGET " + targetExpand + ";"))
+		_, _ = conn.Write([]byte("TARGET " + targetExpand.Addr + ";"))
 	}
 
-	stat.AddConn(strconv.Itoa(c.id), conn.(*net.TCPConn))
+	if tcpConn, ok := conn.(*net.TCPConn); ok {
+		stat.AddConn(strconv.Itoa(c.id), tcpConn)
+	}
 	c.svrConn = conn
 
 	go c.handleServerMessage()

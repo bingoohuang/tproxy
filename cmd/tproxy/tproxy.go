@@ -52,7 +52,7 @@ func main() {
 	flag.VarP(width, "width", "w", "Number of bytes in each hex dump row (use 0 to turn off).")
 	flag.StringArrayVarP(&settings.Local, "local", "p", []string{":33000"}, "Local ip:port, or port to listen")
 	printStrings := flag.BoolP("strings", "S", false, "Print UTF-8 strings after hex dump")
-	flag.StringArrayVarP(&settings.Parent, "parent", "P", nil, `Parent address, such as: "23.32.32.19:28008"`)
+	flag.StringArrayVarP(&settings.Parent, "parent", "P", nil, `Parent address, such as: "23.32.32.19:28008, tcp://127.0.0.1:8090, unix:///etc/a.sock"`)
 	flag.StringArrayVarP(&settings.Target, "target", "T", nil, `Target address, such as: "23.32.32.19:28008"，配合 frpc 使用`)
 	flag.DurationVarP(&settings.Delay, "delay", "d", 0, "the delay to relay packets")
 	flag.DurationVarP(&settings.IdleTimeout, "idle", "", 0, "idle timeout for the connections")
